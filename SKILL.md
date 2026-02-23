@@ -32,7 +32,13 @@ When encountering an OpenClaw problem, follow this priority order:
 - Config examples: `https://docs.openclaw.ai/gateway/configuration-examples`
 - Troubleshooting: `https://docs.openclaw.ai/gateway/troubleshooting`
 - Doctor: `https://docs.openclaw.ai/gateway/doctor`
-- Use `web_fetch` on these URLs to get the latest information
+- **Always fetch with `Accept: text/markdown` header** — the docs site supports content
+  negotiation and returns clean Markdown (no HTML noise) when this header is present.
+  Use `Bash` + `curl` instead of `web_fetch` for these URLs:
+  ```bash
+  curl -s -H "Accept: text/markdown" "https://docs.openclaw.ai/<path>"
+  ```
+  This avoids HTML-to-Markdown conversion artefacts and gives directly usable content.
 
 ### 3. Search GitHub Issues and Discussions
 - Issues: `https://github.com/openclaw/openclaw/issues` — search for error messages or symptoms
