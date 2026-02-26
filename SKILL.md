@@ -9,6 +9,14 @@ description: >
   (5) user references config.apply, config.patch, openclaw doctor, or any OpenClaw CLI command.
   This skill is for Claude (claude.ai) acting as an external auditor for OpenClaw agent outputs,
   using Notion as the communication bridge between Claude and the OpenClaw agent.
+metadata:
+  openclaw:
+    emoji: "🔍"
+    requires:
+      bins: ["curl"]
+      env: []
+    os: ["linux", "macos", "windows"]
+    install: []
 ---
 
 # OpenClaw Auditor
@@ -40,10 +48,23 @@ When encountering an OpenClaw problem, follow this priority order:
   ```
   This avoids HTML-to-Markdown conversion artefacts and gives directly usable content.
 
+  For a full index of all available doc pages, fetch:
+  ```bash
+  curl -s -H "Accept: text/markdown" "https://docs.openclaw.ai/llms.txt"
+  ```
+  This returns a structured list of all documentation URLs, useful for discovering
+  relevant pages before fetching them individually.
+
 ### 3. Search GitHub Issues and Discussions
 - Issues: `https://github.com/openclaw/openclaw/issues` — search for error messages or symptoms
 - Discussions: `https://github.com/openclaw/openclaw/discussions` — search for community solutions
 - Use `web_search` with queries like: `site:github.com/openclaw/openclaw/issues <error_keyword>`
+- To read Markdown files from GitHub repositories (README, docs), use raw URLs:
+  ```bash
+  curl -s "https://raw.githubusercontent.com/<owner>/<repo>/main/<path>.md"
+  ```
+  `github.com` web pages do NOT support `Accept: text/markdown` — always use raw URLs
+  for file content. DeepWiki pages also return HTML only, not Markdown.
 
 ### 4. Check ClawHub for existing skills
 - Registry: `https://clawhub.ai/skills`

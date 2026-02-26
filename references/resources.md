@@ -43,3 +43,13 @@ When searching for specific issues:
 - Config topics: `site:docs.openclaw.ai <topic>`
 - Community solutions: `site:github.com/openclaw/openclaw/discussions <topic>`
 - Existing skills: `site:clawhub.ai <functionality>` or `site:github.com/VoltAgent/awesome-openclaw-skills <keyword>`
+
+## Fetching Protocol
+
+| Resource | Method | Notes |
+|----------|--------|-------|
+| `docs.openclaw.ai/*` | `curl -s -H "Accept: text/markdown" "<url>"` | Returns clean Markdown |
+| `docs.openclaw.ai/llms.txt` | same | Full doc index (all page paths) |
+| GitHub file content | `curl -s "https://raw.githubusercontent.com/<owner>/<repo>/main/<path>"` | No header needed |
+| GitHub Issues/Discussions | WebSearch with `site:` filter | Web pages, not Markdown |
+| DeepWiki | WebSearch or direct browse | No content negotiation support |
