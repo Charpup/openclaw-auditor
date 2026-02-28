@@ -36,6 +36,18 @@ When encountering an OpenClaw problem, follow this priority order:
 - Read `references/resources.md` for the full resource index
 
 ### 2. Fetch official documentation
+
+#### 2a. Discover relevant docs via llms.txt (do this first)
+
+Fetch the index of all available doc pages to find what's relevant before fetching:
+```bash
+curl -s "https://docs.openclaw.ai/llms.txt"
+```
+No header needed — it's a static `.txt` file. Scan the list to identify pages relevant
+to the problem, then fetch only those.
+
+#### 2b. Fetch specific doc pages
+
 - Primary: `https://docs.openclaw.ai/gateway/configuration`
 - Config examples: `https://docs.openclaw.ai/gateway/configuration-examples`
 - Troubleshooting: `https://docs.openclaw.ai/gateway/troubleshooting`
@@ -47,13 +59,6 @@ When encountering an OpenClaw problem, follow this priority order:
   curl -s -H "Accept: text/markdown" "https://docs.openclaw.ai/<path>"
   ```
   This avoids HTML-to-Markdown conversion artefacts and gives directly usable content.
-
-  For a full index of all available doc pages, fetch:
-  ```bash
-  curl -s -H "Accept: text/markdown" "https://docs.openclaw.ai/llms.txt"
-  ```
-  This returns a structured list of all documentation URLs, useful for discovering
-  relevant pages before fetching them individually.
 
 ### 3. Search GitHub Issues and Discussions
 - Issues: `https://github.com/openclaw/openclaw/issues` — search for error messages or symptoms

@@ -1,6 +1,6 @@
 # OpenClaw Config Schema Quick Reference
 
-Based on OpenClaw 2026.2.1+. For full details, fetch `https://docs.openclaw.ai/gateway/configuration`.
+Based on OpenClaw 2026.2.26+. For full details, fetch `https://docs.openclaw.ai/gateway/configuration`.
 
 ## Config File
 
@@ -8,7 +8,7 @@ Based on OpenClaw 2026.2.1+. For full details, fetch `https://docs.openclaw.ai/g
 - Validation: Zod schema (`OpenClawSchema`), strict — unknown keys cause Gateway to refuse to start
 - Recovery: `openclaw doctor` → `openclaw doctor --fix`
 
-## Top-Level Nodes (22 total)
+## Top-Level Nodes (23 total)
 
 | Node | Risk | Purpose |
 |------|------|---------|
@@ -42,6 +42,7 @@ Based on OpenClaw 2026.2.1+. For full details, fetch `https://docs.openclaw.ai/g
 | `cron` | 🟡 | Scheduled jobs and wake events |
 | `discovery` | 🟡 | mDNS/Bonjour broadcast, wide-area DNS-SD |
 | `canvasHost` | 🟢 | LAN Canvas file server |
+| `secrets` | 🔴 | Secret provider config (`secrets.providers`, `secrets.defaults`) — credential storage |
 
 ## Config Modification Methods
 

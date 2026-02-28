@@ -48,8 +48,8 @@ When searching for specific issues:
 
 | Resource | Method | Notes |
 |----------|--------|-------|
-| `docs.openclaw.ai/*` | `curl -s -H "Accept: text/markdown" "<url>"` | Returns clean Markdown |
-| `docs.openclaw.ai/llms.txt` | same | Full doc index (all page paths) |
+| `docs.openclaw.ai/llms.txt` | `curl -s "<url>"` | **No header needed** — static .txt index of all doc pages |
+| `docs.openclaw.ai/*` | `curl -s -H "Accept: text/markdown" "<url>"` | Header required for HTML→Markdown content negotiation |
 | GitHub file content | `curl -s "https://raw.githubusercontent.com/<owner>/<repo>/main/<path>"` | No header needed |
 | GitHub Issues/Discussions | WebSearch with `site:` filter | Web pages, not Markdown |
 | DeepWiki | WebSearch or direct browse | No content negotiation support |
