@@ -1,6 +1,24 @@
 # OpenClaw Config Schema Quick Reference
 
-Based on OpenClaw 2026.2.26+. For full details, fetch `https://docs.openclaw.ai/gateway/configuration`.
+> ⚠️ **OUTDATED FOR FIELD NAMES — STABLE FOR PROCESS RULES**
+>
+> Last refreshed against OpenClaw 2026.2.26+. **Schema fields drift on every minor release** (e.g. `channels.feishu.renderMode` was narrowed to `auto/raw/card` in v4.10 — see `../examples/audit-2026-04-12-f4-feishu-rendermode-schema.md`).
+>
+> **For current schema** — always fetch live:
+> ```bash
+> bash ../scripts/fetch-llms-index.sh <topic>     # find relevant doc pages
+> bash ../scripts/fetch-doc.sh gateway/configuration   # read clean markdown
+> ```
+>
+> **What this file IS still good for**:
+> - Top-level node risk levels (🟢/🟡/🔴) — these are stable across versions
+> - The "config modification methods" table — `config.apply` vs `config.patch` semantics haven't changed
+> - Pre-modification checklist — generic safety steps
+> - Forbidden patterns / common Galatea mistakes — these recur across versions
+>
+> **What this file is NOT good for**: field names, enum values, required keys, schema validation. Use llms.txt for those.
+
+Based on OpenClaw 2026.2.26+ as a snapshot. For current schema, fetch `https://docs.openclaw.ai/gateway/configuration`.
 
 ## Config File
 

@@ -1,6 +1,19 @@
 # OpenClaw Resources Index
 
+## ⭐ DEFAULT FIRST FETCH — llms.txt
+
+**Always start here.** llms.txt is the agent-friendly index of every doc page on `docs.openclaw.ai`, refreshed by upstream on every release.
+
+```bash
+bash ../scripts/fetch-llms-index.sh <keyword>   # filter; or no arg = full index
+bash ../scripts/fetch-doc.sh <path>             # fetch a specific page as markdown
+```
+
+URL: https://docs.openclaw.ai/llms.txt — `curl -s` no header needed; static `.txt` listing.
+
 ## Official Documentation
+
+- **llms.txt index** (use first): https://docs.openclaw.ai/llms.txt
 - **Config reference**: https://docs.openclaw.ai/gateway/configuration
 - **Config examples**: https://docs.openclaw.ai/gateway/configuration-examples
 - **Troubleshooting**: https://docs.openclaw.ai/gateway/troubleshooting
@@ -9,6 +22,7 @@
 - **Full docs site**: https://docs.openclaw.ai
 
 ## Source Code & Community
+
 - **GitHub repo**: https://github.com/openclaw/openclaw
 - **Issues**: https://github.com/openclaw/openclaw/issues
 - **Discussions**: https://github.com/openclaw/openclaw/discussions
@@ -16,29 +30,33 @@
 - **npm**: https://www.npmjs.com/package/openclaw
 
 ## Skills Ecosystem
+
 - **ClawHub registry**: https://clawhub.ai/skills
 - **Skills repo (archived)**: https://github.com/openclaw/skills
 - **Awesome list**: https://github.com/VoltAgent/awesome-openclaw-skills
 - **ClawHub source**: https://github.com/openclaw/clawhub
 
 ## User's Custom Resources
+
 - **Config validator skill**: https://github.com/Charpup/openclaw-config-validator
-  - Complete schema docs for 22 top-level nodes
+  - Authoritative JSON Schema file
   - Validation scripts (`get-schema.sh`, `schema-validate.sh`)
-  - Official JSON Schema file
   - Safety guidelines and forbidden fields list
 
 ## Third-Party Analysis
-- **DeepWiki - Config structure**: https://deepwiki.com/openclaw/openclaw/4.1-configuration-file-structure
-- **DeepWiki - Config management**: https://deepwiki.com/openclaw/openclaw/4.2-configuration-management
-- **DeepWiki - Config commands**: https://deepwiki.com/openclaw/openclaw/12.5-configuration-commands
+
+- **DeepWiki — Config structure**: https://deepwiki.com/openclaw/openclaw/4.1-configuration-file-structure
+- **DeepWiki — Config management**: https://deepwiki.com/openclaw/openclaw/4.2-configuration-management
+- **DeepWiki — Config commands**: https://deepwiki.com/openclaw/openclaw/12.5-configuration-commands
 
 ## Nix/Docker Deployments
+
 - **Nix package**: https://github.com/openclaw/nix-openclaw
 
 ## Search Strategies
 
-When searching for specific issues:
+When llms.txt doesn't surface what you need, fall back to web search with `site:` filter:
+
 - Error messages: `site:github.com/openclaw/openclaw/issues "<exact error>"`
 - Config topics: `site:docs.openclaw.ai <topic>`
 - Community solutions: `site:github.com/openclaw/openclaw/discussions <topic>`
@@ -48,8 +66,8 @@ When searching for specific issues:
 
 | Resource | Method | Notes |
 |----------|--------|-------|
-| `docs.openclaw.ai/llms.txt` | `curl -s "<url>"` | **No header needed** — static .txt index of all doc pages |
-| `docs.openclaw.ai/*` | `curl -s -H "Accept: text/markdown" "<url>"` | Header required for HTML→Markdown content negotiation |
+| `docs.openclaw.ai/llms.txt` | `bash scripts/fetch-llms-index.sh [keyword]` | **DEFAULT FIRST FETCH** — static .txt index of all doc pages |
+| `docs.openclaw.ai/*` | `bash scripts/fetch-doc.sh <path>` | Wrapper for `curl -s -H "Accept: text/markdown" "<url>"` |
 | GitHub file content | `curl -s "https://raw.githubusercontent.com/<owner>/<repo>/main/<path>"` | No header needed |
 | GitHub Issues/Discussions | WebSearch with `site:` filter | Web pages, not Markdown |
 | DeepWiki | WebSearch or direct browse | No content negotiation support |
