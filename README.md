@@ -85,6 +85,18 @@ See [`references/audit-checklist.md`](./references/audit-checklist.md) for the f
 | Symptom → F-mode lookup | ✅ (audit angle) | ✅ (runtime angle) |
 | Incident case studies | ✅ (audit angle) | ✅ (ops angle) |
 
+The **authoritative F1–F12 failure-mode taxonomy** lives in a runbook outside both skills (the operator's local `knowledge-base/openclaw/upgrade-runbook.md`); each skill cross-references it from its own angle — this skill organizes runbook content for review-time risk classification, upgrade-ops organizes the same content for fast symptom-driven access during live incidents. When a new failure mode is discovered, both skills get updated together (see each repo's "Compounding the skill" section).
+
+**See also (paired case studies)** — every audit case here has an ops-side counterpart in `openclaw-upgrade-ops/examples/`, so you can read both perspectives on the same incident:
+
+| F-mode | This skill (audit perspective) | upgrade-ops (ops perspective) |
+|---|---|---|
+| F4 | [`audit-2026-04-12-f4-feishu-rendermode-schema.md`](./examples/audit-2026-04-12-f4-feishu-rendermode-schema.md) | [`incident-2026-04-12-f4-schema-renderMode.md`](https://github.com/Charpup/openclaw-upgrade-ops/blob/main/examples/incident-2026-04-12-f4-schema-renderMode.md) |
+| F9 | [`audit-2026-04-27-f9-systemd-path-stale.md`](./examples/audit-2026-04-27-f9-systemd-path-stale.md) | [`incident-2026-04-27-v4.24-upgrade-f9.md`](https://github.com/Charpup/openclaw-upgrade-ops/blob/main/examples/incident-2026-04-27-v4.24-upgrade-f9.md) |
+| F12 | [`audit-2026-04-28-f12-discord-emergency-rollback.md`](./examples/audit-2026-04-28-f12-discord-emergency-rollback.md) | [`incident-2026-04-28-f10-f11-f12-chain.md`](https://github.com/Charpup/openclaw-upgrade-ops/blob/main/examples/incident-2026-04-28-f10-f11-f12-chain.md) |
+
+When in doubt about which skill to invoke: are you *reviewing* a proposed change before it's applied? this skill. Are you *executing* a change (or already mid-incident)? upgrade-ops.
+
 ## Compounding the skill
 
 When a new audit-relevant pattern surfaces (a class of mistake, a precedence rule, a schema breaking change), update in this order:
