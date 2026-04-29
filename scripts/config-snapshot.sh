@@ -2,7 +2,7 @@
 # config-snapshot.sh — capture openclaw.json baseline + baseHash before audit-recommended changes
 #
 # Run this BEFORE any proposed config change. Outputs:
-#   1. timestamped backup ~/.openclaw/openclaw.json.bak.<TS>
+#   1. timestamped backup $OPENCLAW_HOME/openclaw.json.bak.<TS>
 #   2. pretty-printed snapshot for diffing
 #   3. baseHash from `openclaw gateway call config.get` (required by config.patch / config.apply)
 #   4. per-agent overrides snapshot (catches F7-class regressions)
@@ -10,18 +10,23 @@
 # Usage:
 #   bash config-snapshot.sh
 #
+# Environment overrides (defaults shown):
+#   OPENCLAW_HOME=$HOME/.openclaw         # config + per-agent state root
+#   LOG_DIR=$OPENCLAW_HOME/upgrade-logs   # snapshot output directory
+#
 # Exit codes:
 #   0 — snapshot complete
 #   1 — openclaw.json missing or unreadable
 #   2 — jq missing
 #
 # After audit + change applied, diff with:
-#   diff <(jq -S . ~/.openclaw/openclaw.json) ~/.openclaw/upgrade-logs/audit-snapshot-pretty-<TS>.json
+#   diff <(jq -S . "$OPENCLAW_HOME/openclaw.json") "$LOG_DIR/audit-snapshot-pretty-<TS>.json"
 
 set -uo pipefail
 
-CONFIG=/root/.openclaw/openclaw.json
-LOG_DIR=/root/.openclaw/upgrade-logs
+OPENCLAW_HOME="${OPENCLAW_HOME:-$HOME/.openclaw}"
+CONFIG="$OPENCLAW_HOME/openclaw.json"
+LOG_DIR="${LOG_DIR:-$OPENCLAW_HOME/upgrade-logs}"
 TS=$(date -u +%Y%m%d-%H%M%S)
 
 if [[ ! -r "$CONFIG" ]]; then

@@ -31,7 +31,9 @@ git clone https://github.com/Charpup/openclaw-auditor ~/.claude/skills/openclaw-
 
 Claude Code auto-discovers skills under `~/.claude/skills/`. The skill triggers on keywords like `OpenClaw`, `openclaw.json`, `config.apply`, `Galatea`, `openclaw doctor`, "audit OpenClaw config", "agent proposal review", etc.
 
-**Requires** on the host: `curl`, `jq`. Optional: `openclaw` CLI (for `config-snapshot.sh` to extract `baseHash`).
+**Requires** on the host: `curl`, `jq`. Optional: `openclaw` CLI (for `config-snapshot.sh` to extract `baseHash`); Python 3 + PyYAML (for `scripts/quick_validate.py`, install via `pip install pyyaml`).
+
+`scripts/config-snapshot.sh` honors `OPENCLAW_HOME` (default `$HOME/.openclaw`) and `LOG_DIR` (default `$OPENCLAW_HOME/upgrade-logs`) — so non-root installs work out of the box.
 
 ## What's inside
 

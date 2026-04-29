@@ -1,13 +1,27 @@
 #!/usr/bin/env python3
 """
 Quick validation script for skills - minimal version
+
+Requires PyYAML (`pip install pyyaml`). On a clean Python environment,
+the import below fails with ModuleNotFoundError; we catch it and print
+an actionable hint instead of a stack trace.
 """
 
 import sys
 import os
 import re
-import yaml
 from pathlib import Path
+
+try:
+    import yaml
+except ImportError:
+    sys.stderr.write(
+        "ERROR: PyYAML is required. Install it with one of:\n"
+        "  python3 -m pip install --user pyyaml\n"
+        "  pipx install pyyaml\n"
+        "  uv pip install pyyaml\n"
+    )
+    sys.exit(3)
 
 def validate_skill(skill_path):
     """Basic validation of a skill"""
