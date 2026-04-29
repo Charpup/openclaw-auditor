@@ -1,0 +1,122 @@
+{
+  "skill_name": "openclaw-auditor",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "My OpenClaw gateway config has groupPolicy set to 'open' and no token authentication. Is this dangerous? What should I change?",
+      "expected_output": "Identifies 'open' groupPolicy as high-risk (anyone can join without invite), recommends changing to 'invite' or 'closed'. Flags missing token auth as a security gap. Provides specific config.patch command to fix both issues.",
+      "assertions": [
+        {
+          "text": "Identifies open groupPolicy as a security risk",
+          "type": "contains_any",
+          "values": ["groupPolicy", "open", "risk", "dangerous", "security"]
+        },
+        {
+          "text": "Provides actionable fix",
+          "type": "llm_judge",
+          "criteria": "The response gives a specific config.patch or config.apply command to harden the gateway configuration."
+        },
+        {
+          "text": "Recommends backup before changes",
+          "type": "contains_any",
+          "values": ["backup", "bak", "config-snapshot", "cp ~/.openclaw"]
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "My OpenClaw gateway isn't starting. I get 'invalid config' error but no details. How do I diagnose this?",
+      "expected_output": "Recommends running 'openclaw doctor' first. Explains that gateway refuses to start on invalid config, and only diagnostic commands work in this state. Points to config validation tools and common config schema pitfalls.",
+      "assertions": [
+        {
+          "text": "Recommends openclaw doctor as first step",
+          "type": "contains_any",
+          "values": ["openclaw doctor", "doctor"]
+        },
+        {
+          "text": "Explains diagnostic-only mode",
+          "type": "llm_judge",
+          "criteria": "The response explains that on invalid config the gateway won't start but diagnostic commands still work, guiding the user through recovery."
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "What's the capital of France?",
+      "expected_output": "General knowledge question. Skill should NOT trigger.",
+      "assertions": [
+        {
+          "text": "Answers directly without OpenClaw audit workflow",
+          "type": "llm_judge",
+          "criteria": "The response answers 'Paris' directly without invoking OpenClaw config review or Notion audit workflow."
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "I'm setting up the Feishu channel and want to use renderMode: 'invoice' so messages look like invoice cards. The Galatea agent suggested I add it to channels.feishu.renderMode. Is this OK?",
+      "expected_output": "Auditor must NOT trust local schema-quick-ref. It should fetch llms.txt or docs.openclaw.ai/gateway/configuration to check current allowed values. The current schema (v4.10+) restricts renderMode to ['auto', 'raw', 'card']. 'invoice' is not legal — recommend 'card' if user wants card-like rendering, or 'auto' for default behavior. Reference the F4 schema-narrowing example.",
+      "assertions": [
+        {
+          "text": "References llms.txt or live doc fetch",
+          "type": "contains_any",
+          "values": ["llms.txt", "docs.openclaw.ai", "fetch-doc", "fetch-llms-index", "schema", "current"]
+        },
+        {
+          "text": "Identifies renderMode is enum-restricted",
+          "type": "contains_any",
+          "values": ["enum", "auto", "raw", "card", "allowed", "restricted", "invalid"]
+        },
+        {
+          "text": "Rejects 'invoice' value",
+          "type": "llm_judge",
+          "criteria": "The response clearly states that 'invoice' is not a legal value for renderMode and proposes a legal alternative (card or auto)."
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "I rotated my Anthropic API key — exported the new ANTHROPIC_API_KEY env var and restarted the gateway. Galatea is still getting 401. Should I write the new key into models.anthropic.apiKey in openclaw.json directly?",
+      "expected_output": "Auditor recognizes this as F2 (auth-profile precedence). Per-agent auth-profiles.json (~/.openclaw/agents/<id>/agent/auth-profiles.json) takes precedence over env vars and over openclaw.json. Writing to models.anthropic.apiKey will NOT fix it. Three fixes must happen in sync: env, per-agent profile.apiKey, and clearing usageStats.errorCount/cooldownUntil. References the F2 example.",
+      "assertions": [
+        {
+          "text": "Identifies auth-profile precedence",
+          "type": "contains_any",
+          "values": ["auth-profiles", "auth-profile", "profile", "precedence", "priority"]
+        },
+        {
+          "text": "Mentions per-agent path or cooldown",
+          "type": "contains_any",
+          "values": ["agents/", "per-agent", "cooldown", "usageStats", "errorCount"]
+        },
+        {
+          "text": "Rejects the proposed openclaw.json fix",
+          "type": "llm_judge",
+          "criteria": "The response explains why writing models.anthropic.apiKey alone won't fix the 401, and proposes the three-way sync (env + profile + cooldown clear)."
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "Galatea wrote a complete new openclaw.json that includes all our channel settings, model defaults, and agent configs. It wants to apply it via `openclaw config.apply`. Approve?",
+      "expected_output": "Auditor must REJECT or strongly gate. config.apply is a full replace and silently nukes per-agent overrides (.agents.<id>.overrides.*) and plugin auto-written fields (wizard.*). Required: list current overrides via config-snapshot.sh, capture baseHash, manually diff, prefer config.patch with baseHash. Reference SP2 + the F7 risk in symptom-index.",
+      "assertions": [
+        {
+          "text": "Warns about full-replace semantics of config.apply",
+          "type": "contains_any",
+          "values": ["full replace", "全量替换", "overrides", "override", "config.apply", "nuke", "清掉", "覆盖"]
+        },
+        {
+          "text": "Recommends config.patch or per-field set instead",
+          "type": "contains_any",
+          "values": ["config.patch", "config set", "patch", "openclaw config set"]
+        },
+        {
+          "text": "Requires baseHash + snapshot before any apply",
+          "type": "llm_judge",
+          "criteria": "The response requires capturing the current per-agent overrides (via config-snapshot.sh or jq .agents) and a baseHash from config.get before any config.apply, OR refuses to approve outright."
+        }
+      ]
+    }
+  ]
+}

@@ -1,19 +1,19 @@
 ---
 name: openclaw-auditor
-description: >
-  Audit OpenClaw agent proposals and troubleshoot OpenClaw configuration issues.
-  Trigger when: (1) user shares a Notion page containing an OpenClaw agent's proposal for review/audit,
-  (2) user asks about OpenClaw configuration, troubleshooting, or architecture,
-  (3) user mentions OpenClaw, Galatea (agent name), openclaw.json, or Gateway issues,
-  (4) user asks to review or fix broken channel integrations (Discord, Feishu, Telegram, WhatsApp, etc.),
-  (5) user references config.apply, config.patch, openclaw doctor, or any OpenClaw CLI command.
-  This skill is for Claude (claude.ai) acting as an external auditor for OpenClaw agent outputs,
-  using Notion as the communication bridge between Claude and the OpenClaw agent.
+description: >-
+  TRIGGER: OpenClaw, openclaw.json, Galatea agent, openclaw doctor, config.apply,
+  config.patch, ClawHub, openclaw-auditor, Gateway issues, audit OpenClaw config,
+  schema validation, agent proposal review.
+  Static configuration audit for OpenClaw — review agent proposals, validate
+  openclaw.json changes, catch schema errors before execution. Use when: user
+  shares an OpenClaw agent proposal for review, asks about openclaw.json config,
+  channel integrations (Discord/Feishu/Telegram/WhatsApp), or any openclaw CLI
+  config command. Default research entry: docs.openclaw.ai/llms.txt.
 metadata:
   openclaw:
     emoji: "🔍"
     requires:
-      bins: ["curl"]
+      bins: ["curl", "jq"]
       env: []
     os: ["linux", "macos", "windows"]
     install: []
@@ -21,97 +21,111 @@ metadata:
 
 # OpenClaw Auditor
 
-## Purpose
+Static config audit for OpenClaw (Galatea agent has high op privileges but limited schema awareness — Claude reviews proposals, catches errors before execution, suggests safer alternatives).
 
-Act as a safety net and quality auditor for OpenClaw agent (Galatea) operations. The agent has
-high operational privileges but limited schema awareness, frequently breaking its own configuration.
-Claude reviews agent proposals, catches errors before execution, and provides better alternatives.
+Counterpart skill: **openclaw-upgrade-ops** = orchestration / live incident response. When you'd call upgrade-ops: actually changing version, applying plugin, post-upgrade verification, troubleshooting live failures. When you'd call this skill: static review of a proposed config diff or Galatea agent proposal, no orchestration.
 
-## Research Workflow
+## Default research workflow
 
-When encountering an OpenClaw problem, follow this priority order:
+**Step 1 — always start with llms.txt** (the agent-friendly doc index, refreshed by upstream on every release):
 
-### 1. Check local references first
-- Read `references/schema-quick-ref.md` for config node overview and common pitfalls
-- Read `references/resources.md` for the full resource index
-
-### 2. Fetch official documentation
-
-#### 2a. Discover relevant docs via llms.txt (do this first)
-
-Fetch the index of all available doc pages to find what's relevant before fetching:
 ```bash
-curl -s "https://docs.openclaw.ai/llms.txt"
+bash scripts/fetch-llms-index.sh <topic>      # e.g. <topic>=channels.feishu, gateway, auth
+# or directly:
+curl -s https://docs.openclaw.ai/llms.txt | grep -i <topic>
 ```
-No header needed — it's a static `.txt` file. Scan the list to identify pages relevant
-to the problem, then fetch only those.
 
-#### 2b. Fetch specific doc pages
+llms.txt lists every doc page as plain markdown URLs — scan for relevance, then only fetch what matches:
 
-- Primary: `https://docs.openclaw.ai/gateway/configuration`
-- Config examples: `https://docs.openclaw.ai/gateway/configuration-examples`
-- Troubleshooting: `https://docs.openclaw.ai/gateway/troubleshooting`
-- Doctor: `https://docs.openclaw.ai/gateway/doctor`
-- **Always fetch with `Accept: text/markdown` header** — the docs site supports content
-  negotiation and returns clean Markdown (no HTML noise) when this header is present.
-  Use `Bash` + `curl` instead of `web_fetch` for these URLs:
-  ```bash
-  curl -s -H "Accept: text/markdown" "https://docs.openclaw.ai/<path>"
-  ```
-  This avoids HTML-to-Markdown conversion artefacts and gives directly usable content.
+```bash
+bash scripts/fetch-doc.sh gateway/configuration
+# or directly:
+curl -s -H "Accept: text/markdown" https://docs.openclaw.ai/<path>
+```
 
-### 3. Search GitHub Issues and Discussions
-- Issues: `https://github.com/openclaw/openclaw/issues` — search for error messages or symptoms
-- Discussions: `https://github.com/openclaw/openclaw/discussions` — search for community solutions
-- Use `web_search` with queries like: `site:github.com/openclaw/openclaw/issues <error_keyword>`
-- To read Markdown files from GitHub repositories (README, docs), use raw URLs:
-  ```bash
-  curl -s "https://raw.githubusercontent.com/<owner>/<repo>/main/<path>.md"
-  ```
-  `github.com` web pages do NOT support `Accept: text/markdown` — always use raw URLs
-  for file content. DeepWiki pages also return HTML only, not Markdown.
+**Step 2 — fall back only if llms.txt doesn't surface the answer**:
+- GitHub issues / discussions (search via WebSearch with `site:github.com/openclaw/openclaw/issues`)
+- `https://github.com/Charpup/openclaw-config-validator` for authoritative JSON Schema
+- `references/schema-quick-ref.md` (local snapshot — STABLE rules only, schema fields lag upstream)
+- ClawHub (`https://clawhub.ai/skills`) before building anything custom
 
-### 4. Check ClawHub for existing skills
-- Registry: `https://clawhub.ai/skills`
-- Awesome list: `https://github.com/VoltAgent/awesome-openclaw-skills`
-- Search before building custom solutions to avoid reinventing the wheel
+`references/resources.md` has the full link library + fetching protocol cheat sheet.
 
-### 5. Check the config-validator skill
-- Schema reference: `https://github.com/Charpup/openclaw-config-validator`
-- Contains complete schema docs for OpenClaw 2026.2.1+ (22 top-level nodes)
-- Includes validation scripts and forbidden fields list
+## Where to look (decision flow)
 
-## Audit Process
+| If you're doing… | Read first |
+|---|---|
+| Reviewing an **agent proposal from Notion** | `references/audit-checklist.md` (5-step framework + Notion writeback template) |
+| Diagnosing a **specific symptom** (`config validate FAILED: ...`, `401 despite env var`, etc.) | `references/symptom-index.md` (⌘F the literal string) |
+| Auditing a proposed **`openclaw.json` diff** | `scripts/config-snapshot.sh` (capture baseline + baseHash) → `references/audit-checklist.md` step (c)/(d) |
+| Wondering **why** a SOP rule exists (e.g. "why config.patch over config.apply?") | `references/success-patterns.md` (SP1–SP6 with rationale) |
+| Looking for a **prior similar incident** | `examples/` (audit-perspective case studies, dated by event) |
+| Need stable **node/risk reference** | `references/schema-quick-ref.md` (top-level node risk table + pre-modification checklist) |
 
-When reviewing an agent proposal from a Notion page:
+## Audit process (5-step short form)
 
-1. **Read the Notion page** — understand what the agent proposes to do and why
-2. **Identify risk level** — categorize the proposed changes:
-   - 🟢 Low risk: workspace files, SOUL.md, AGENTS.md, skill installation
-   - 🟡 Medium risk: channel config, model settings, tool policies
-   - 🔴 High risk: gateway settings, auth config, config.apply (full replace), sandbox settings
-3. **Validate against schema** — check proposed config changes against known schema structure
-4. **Research if needed** — follow the research workflow above for unfamiliar areas
-5. **Write audit result back to Notion** — include:
-   - Risk assessment
-   - Issues found (if any)
-   - Recommended approach (if different from proposal)
-   - Relevant documentation links
-   - Specific commands or config snippets ready for execution
+Full version with Notion writeback template lives in `references/audit-checklist.md`. Inline summary:
 
-## Key Safety Rules
+1. **Read the proposal** — understand the *intent* before the *diff*
+2. **Identify risk level** — 🟢 workspace files / SOUL.md / skills · 🟡 channel/model/tool · 🔴 gateway/auth/sandbox/secrets/config.apply
+3. **Validate against current schema** — fetch live via Step 1 above; never trust local schema-quick-ref for field names
+4. **Research unknowns** — llms.txt → GitHub issues → DeepWiki, in that order
+5. **Write back to Notion** — risk + issues + recommended commands + doc links (template in audit-checklist.md)
 
-- `config.apply` replaces the ENTIRE config. Prefer `config.patch` for partial updates.
-- Always recommend `cp ~/.openclaw/openclaw.json ~/.openclaw/openclaw.json.bak` before changes.
-- `openclaw doctor` is the first diagnostic step for any startup failure.
-- Gateway refuses to start on invalid config — only diagnostic commands work in this state.
-- Never add fields that don't exist in the schema (common agent mistake).
-- Channel account keys vary: WhatsApp uses credential dirs, Telegram/Discord use `botToken`.
+## Key safety rules
 
-## Notion Interaction Protocol
+- `config.apply` replaces the **entire** config — prefer `config.patch` for partial updates (preserves per-agent overrides)
+- Always recommend `bash scripts/config-snapshot.sh` before any change (captures backup + baseHash)
+- `openclaw doctor` is the first diagnostic step for any startup failure
+- Gateway refuses to start on invalid config — only diagnostic commands work in this state
+- Never add fields that don't exist in the schema (most common Galatea mistake)
+- Channel account keys vary: WhatsApp uses credential dirs, Telegram/Discord use `botToken` (NOT `token`)
+- **`auth-profiles.json` priority > env vars** — rotating an env API key alone won't take effect (see `examples/audit-2026-04-08-f2-*`)
+- **systemd unit drop-ins are also config surface** — PATH/Environment chunks count, audit them too (see `examples/audit-2026-04-27-f9-*`)
 
-- Notion is the bridge between Claude and the OpenClaw agent
+## Notion interaction protocol
+
+- Notion is the bridge between Claude and the OpenClaw (Galatea) agent
 - User provides Notion page links; read via Notion MCP tools
-- Write audit results and instructions back to the same or linked Notion pages
-- If context on a Notion page is insufficient, ask the user to request more detail from the agent
-- Keep instructions to the agent action-oriented and executable
+- Write audit results back to the same or linked page
+- If page context is insufficient, ask user to request more from the agent — don't guess
+- Keep instructions to the agent action-oriented and copy-paste executable
+- For emergency overrides applied during incident response, **always include a TODO-revert marker** with target window (see `examples/audit-2026-04-28-f12-*` — the F12 Discord rate-limit workaround is still un-reverted because no marker was set)
+
+## Coordination with openclaw-upgrade-ops
+
+Upgrade-ops calls this skill when it needs to mutate `openclaw.json` mid-upgrade (e.g. migrating a deprecated field after a breaking schema change, or applying an emergency channel toggle). Don't bypass — that's how F1 (network field cascade) and F12 (un-marked Discord rollback) happened.
+
+The shared authoritative source for failure modes F1–F12 lives in `~/claude_code_workspace/knowledge-base/openclaw/upgrade-runbook.md` §2. Both skills index into that table; this skill does **not** maintain its own copy.
+
+## Anti-patterns (don't)
+
+- ❌ Approve a `config.apply` proposal without first listing all current per-agent overrides (will be silently nuked)
+- ❌ Trust the local `references/schema-quick-ref.md` for current schema fields — fetch llms.txt
+- ❌ Audit only `openclaw.json` and skip systemd unit / drop-ins / `~/.openclaw/agents/*/auth-profiles.json` (they're all config surface)
+- ❌ Approve emergency config changes without a TODO-revert marker + target window
+- ❌ Recommend a fix without giving the user the rollback command in the same message
+
+## Compounding the skill
+
+When this skill is used and a new audit-relevant pattern surfaces (a class of mistake, a new schema breaking change, a non-obvious precedence rule):
+
+1. Add a row to `references/symptom-index.md` (literal symptom → cause → one-line fix)
+2. Add an SP entry to `references/success-patterns.md` if it's a positive rule worth following
+3. Write a case study in `examples/audit-<YYYY-MM-DD>-<short-name>.md` using the existing template (context / timeline / root cause / what auditor would have caught / lessons)
+4. If the precedence/risk affects existing auditor evals, add a row to `evals/evals.json`
+5. Update `references/audit-checklist.md` only if the *process* changes, not the *content*
+
+The point of `examples/` is that future-Claude inherits not just the rules but the reasoning — what the proposer's intent was, what the auditor missed (or caught), what the precedence chain actually was. Don't just write "F2 = check auth-profiles". Write what the user originally asked for, what assumption felt safe, when it broke. That's what compounds.
+
+## Files this skill reads / writes
+
+Reads:
+- `references/*.md` (organized for fast access)
+- `examples/*.md` (case studies for context)
+- `~/.openclaw/openclaw.json` and `~/.openclaw/agents/*/agent/auth-profiles.json` (current state)
+- `~/claude_code_workspace/knowledge-base/openclaw/upgrade-runbook.md` §2 (authoritative F-mode table)
+
+Writes:
+- Notion pages (audit results back to whatever page the user shared)
+- `~/.openclaw/openclaw.json.bak.<TS>` via `scripts/config-snapshot.sh` (never edits the live config directly — recommends commands for the user to run)
